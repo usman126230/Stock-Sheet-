@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const codeReader = new ZXing.BrowserMultiFormatReader();
     let selectedInput = null;
 
-    // Change button text to English to avoid confusion
+    // Set button/modal text
     printBtn.textContent = 'Print / Save as PDF';
     clearBtn.textContent = 'Erase All Data';
     closeScannerBtn.textContent = 'Close';
@@ -34,15 +34,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function updateEmptyRowClasses() {
-        const rows = tableBody.querySelectorAll('tr');
-        rows.forEach(row => {
+        tableBody.querySelectorAll('tr').forEach(row => {
             const inputs = row.querySelectorAll('input');
-            let isEmpty = true;
-            inputs.forEach(input => {
-                if (input.value.trim() !== '') {
-                    isEmpty = false;
-                }
-            });
+            let isEmpty = ![...inputs].some(input => input.value.trim() !== '');
             row.classList.toggle('is-empty', isEmpty);
         });
     }
@@ -63,9 +57,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const data = JSON.parse(savedData);
             dateInput.value = data.date || '';
             document.querySelectorAll('.input-cell').forEach(input => {
-                if (data.table?.[input.dataset.row]?.[input.dataset.col]) {
-                    input.value = data.table[input.dataset.row][input.dataset.col];
-                }
+                input.value = data.table?.[input.dataset.row]?.[input.dataset.col] || '';
             });
         } else {
             dateInput.value = new Date().toISOString().split('T')[0];
@@ -77,7 +69,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!event.target.classList.contains('scan-btn')) return;
 
         selectedInput = event.target.previousElementSibling;
-        scannerModal.style.display = 'flex';
+        scannerModal.classList.add('is-visible'); // Use class to show modal
 
         codeReader.decodeFromVideoDevice(undefined, 'video', (result, err) => {
             if (result) {
@@ -86,26 +78,28 @@ document.addEventListener('DOMContentLoaded', function() {
                 saveData();
             }
             if (err && !(err instanceof ZXing.NotFoundException)) {
-                console.error(err);
-                alert('An error occurred during scanning.');
+                console.error('Scanning error:', err);
                 stopScanner();
             }
         }).catch(err => {
-            console.error(err);
-            alert('Could not start camera. Please make sure you grant camera permission. This feature works best in Chrome on Android.');
+            console.error('Camera start error:', err);
+            alert('Could not start camera. Please grant camera permission.');
             stopScanner();
         });
     }
 
     function stopScanner() {
-        codeReader.reset();
-        scannerModal.style.display = 'none';
+        try {
+            codeReader.reset();
+        } catch (e) {
+            console.warn("Scanner was reset before it could start.", e);
+        }
+        scannerModal.classList.remove('is-visible'); // Use class to hide modal
         selectedInput = null;
     }
 
     // --- Event Listeners ---
     printBtn.addEventListener('click', () => window.print());
-
     clearBtn.addEventListener('click', () => {
         if (confirm('Are you sure you want to erase all data?')) {
             localStorage.removeItem('sheetData');

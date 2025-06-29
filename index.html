@@ -1,16 +1,16 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سحب بضاعة من المستودع</title>
+    <title>Warehouse Stock Withdrawal</title>
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
 
         body {
-            font-family: 'Cairo', sans-serif;
-            direction: rtl;
+            font-family: 'Roboto', sans-serif;
+            direction: ltr; /* English: Left-to-Right */
             background-color: #f4f4f4;
             margin: 0;
             padding: 15px;
@@ -34,22 +34,41 @@
             margin-bottom: 25px;
         }
 
-        h1 { margin: 0; font-size: 24px; color: #343a40; text-align: right; }
+        h1 { margin: 0; font-size: 24px; color: #343a40; text-align: left; }
         .date-container { display: flex; align-items: center; }
-        .date-container label { margin-left: 10px; font-weight: bold; color: #495057; }
+        .date-container label { margin-right: 10px; font-weight: bold; color: #495057; }
         #date { border: 1px solid #ced4da; padding: 8px; border-radius: 4px; }
 
         #data-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        #data-table th, #data-table td { border: 1px solid #dee2e6; padding: 10px; text-align: center; vertical-align: middle; }
-        #data-table th { background-color: #f8f9fa; font-weight: bold; color: #495057; }
+        #data-table th, #data-table td { 
+            border: 1px solid #dee2e6; 
+            padding: 10px; 
+            text-align: center; 
+            vertical-align: middle; 
+        }
+        #data-table th { 
+            background-color: #f8f9fa; 
+            font-weight: bold; 
+            color: #495057; 
+        }
 
         .input-container { position: relative; display: flex; align-items: center; }
-        #data-table input { width: 100%; border: none; padding: 8px; box-sizing: border-box; background-color: transparent; font-family: 'Cairo', sans-serif; font-size: 15px; }
+        #data-table input { 
+            width: 100%; 
+            border: none; 
+            padding: 8px; 
+            box-sizing: border-box; 
+            background-color: transparent; 
+            font-family: 'Roboto', sans-serif; 
+            font-size: 15px; 
+            text-align: center;
+        }
         #data-table input:focus { outline: 2px solid #80bdff; border-radius: 3px; }
 
         .scan-btn {
             position: absolute;
-            left: 8px; top: 50%;
+            right: 8px; /* Changed from left to right */
+            top: 50%;
             transform: translateY(-50%);
             display: none; cursor: pointer;
             background-color: #007bff; color: white;
@@ -62,7 +81,7 @@
         .signature-field { text-align: center; }
 
         .buttons-container { text-align: center; margin-top: 40px; padding-top: 25px; border-top: 1px solid #e9ecef; }
-        button { background-color: #007bff; color: white; border: none; padding: 12px 25px; font-size: 16px; font-family: 'Cairo', sans-serif; border-radius: 5px; cursor: pointer; margin: 8px; }
+        button { background-color: #007bff; color: white; border: none; padding: 12px 25px; font-size: 16px; font-family: 'Roboto', sans-serif; border-radius: 5px; cursor: pointer; margin: 8px; }
         button#clear-btn { background-color: #dc3545; }
         button:hover { opacity: 0.85; }
 
@@ -88,9 +107,9 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>سحب بضاعة من المستودع</h1>
+            <h1>Withdraw Goods from the Warehouse</h1>
             <div class="date-container">
-                <label for="date">التاريخ:</label>
+                <label for="date">Date:</label>
                 <input type="date" id="date">
             </div>
         </div>
@@ -98,9 +117,9 @@
         <table id="data-table">
             <thead>
                 <tr>
-                    <th style="width: 20%;">الكمية</th>
-                    <th>اسم المنتج</th>
-                    <th style="width: 35%;">الباركود</th>
+                    <th style="width: 20%;">Quantity</th>
+                    <th>Product Name</th>
+                    <th style="width: 35%;">Barcode</th>
                 </tr>
             </thead>
             <tbody id="table-body">
@@ -109,18 +128,18 @@
 
         <div class="footer">
             <div class="signature-field">
-                <label>المستلم:</label>
+                <label>Receiver:</label>
                 <span>...................................</span>
             </div>
             <div class="signature-field">
-                <label>التوقيع:</label>
+                <label>Signature:</label>
                 <span>...................................</span>
             </div>
         </div>
 
         <div class="buttons-container">
-            <button id="print-btn">طباعة / حفظ كـ PDF</button>
-            <button id="clear-btn">مسح جميع البيانات</button>
+            <button id="print-btn">Print / Save as PDF</button>
+            <button id="clear-btn">Erase All Data</button>
         </div>
     </div>
 
@@ -152,6 +171,7 @@
             // --- Functions ---
             function createRow(rowData = ['', '', '']) {
                 const row = document.createElement('tr');
+                // Note: The order of values is based on the new English column order
                 row.innerHTML = `
                     <td><input type="text" class="input-cell" value="${rowData[0]}"></td>
                     <td><input type="text" class="input-cell" value="${rowData[1]}"></td>

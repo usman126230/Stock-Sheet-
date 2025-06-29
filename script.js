@@ -5,36 +5,56 @@ document.addEventListener('DOMContentLoaded', function() {
     const clearBtn = document.getElementById('clear-btn');
     const totalRows = 25;
 
-    // Function to create and append rows
-    function createInitialRows() {
-        for (let i = 0; i < totalRows; i++) {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td><input type="text" class="input-cell" data-row="${i}" data-col="0"></td>
-                <td><input type="text" class="input-cell" data-row="${i}" data-col="1"></td>
-                <td><input type="text" class="input-cell" data-row="${i}" data-col="2"></td>
-            `;
-            tableBody.appendChild(row);
-        }
+    const scannerModal = document.getElementById('scanner-modal');
+    const videoElement = document.getElementById('video');
+    const closeScannerBtn = document.getElementById('close-scanner-btn');
+    const codeReader = new ZXing.BrowserMultiFormatReader();
+    let selectedInput = null;
+
+    function createRow(rowIndex) {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td><div class="input-container"><input type="text" class="input-cell" data-row="${rowIndex}" data-col="0"></div></td>
+            <td><div class="input-container"><input type="text" class="input-cell" data-row="${rowIndex}" data-col="1"></div></td>
+            <td>
+                <div class="input-container">
+                    <input type="text" class="input-cell barcode-input" data-row="${rowIndex}" data-col="2">
+                    <button class="scan-btn">Scan</button>
+                </div>
+            </td>
+        `;
+        tableBody.appendChild(row);
     }
 
-    // Function to save data to localStorage
+    function updateEmptyRowClasses() {
+        const rows = tableBody.querySelectorAll('tr');
+        rows.forEach(row => {
+            const inputs = row.querySelectorAll('input');
+            let isEmpty = true;
+            inputs.forEach(input => {
+                if (input.value.trim() !== '') {
+                    isEmpty = false;
+                }
+            });
+            if (isEmpty) {
+                row.classList.add('is-empty');
+            } else {
+                row.classList.remove('is-empty');
+            }
+        });
+    }
+
     function saveData() {
-        const data = {
-            date: dateInput.value,
-            table: []
-        };
+        const data = { date: dateInput.value, table: [] };
         const inputs = document.querySelectorAll('.input-cell');
         inputs.forEach(input => {
-            if (!data.table[input.dataset.row]) {
-                data.table[input.dataset.row] = [];
-            }
+            if (!data.table[input.dataset.row]) data.table[input.dataset.row] = [];
             data.table[input.dataset.row][input.dataset.col] = input.value;
         });
         localStorage.setItem('sheetData', JSON.stringify(data));
+        updateEmptyRowClasses();
     }
 
-    // Function to load data from localStorage
     function loadData() {
         const savedData = localStorage.getItem('sheetData');
         if (savedData) {
@@ -47,37 +67,52 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         } else {
-             // Set current date if no saved data
             const today = new Date();
-            const yyyy = today.getFullYear();
-            const mm = String(today.getMonth() + 1).padStart(2, '0');
-            const dd = String(today.getDate()).padStart(2, '0');
-            dateInput.value = `${yyyy}-${mm}-${dd}`;
+            dateInput.value = today.toISOString().split('T')[0];
+        }
+        updateEmptyRowClasses();
+    }
+
+    function startScanner(event) {
+        if (event.target.classList.contains('scan-btn')) {
+            selectedInput = event.target.previousElementSibling;
+            scannerModal.style.display = 'flex';
+            codeReader.decodeFromVideoDevice(undefined, 'video', (result, err) => {
+                if (result) {
+                    selectedInput.value = result.text;
+                    stopScanner();
+                    saveData(); // Save after successful scan
+                }
+                if (err && !(err instanceof ZXing.NotFoundException)) {
+                    console.error(err);
+                    stopScanner();
+                }
+            }).catch(err => console.error(err));
         }
     }
 
-    // Event Listeners
-    printBtn.addEventListener('click', () => {
-        window.print();
-    });
+    function stopScanner() {
+        codeReader.reset();
+        scannerModal.style.display = 'none';
+        selectedInput = null;
+    }
 
+    // Event Listeners
+    printBtn.addEventListener('click', () => window.print());
     clearBtn.addEventListener('click', () => {
         if (confirm('کیا آپ واقعی تمام ڈیٹا صاف کرنا چاہتے ہیں؟')) {
             localStorage.removeItem('sheetData');
             document.querySelectorAll('.input-cell').forEach(input => input.value = '');
-            const today = new Date();
-            const yyyy = today.getFullYear();
-            const mm = String(today.getMonth() + 1).padStart(2, '0');
-            const dd = String(today.getDate()).padStart(2, '0');
-            dateInput.value = `${yyyy}-${mm}-${dd}`;
+            loadData();
         }
     });
 
-    // Autosave on input
+    closeScannerBtn.addEventListener('click', stopScanner);
+    tableBody.addEventListener('click', startScanner);
     tableBody.addEventListener('input', saveData);
     dateInput.addEventListener('change', saveData);
 
     // Initial setup
-    createInitialRows();
+    for (let i = 0; i < totalRows; i++) createRow(i);
     loadData();
 });

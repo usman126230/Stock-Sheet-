@@ -43,7 +43,7 @@ h1 { margin: 0; font-size: 24px; }
     left: 5px;
     top: 50%;
     transform: translateY(-50%);
-    display: none; /* Hidden by default */
+    display: none;
     cursor: pointer;
     background-color: #007bff;
     color: white;
@@ -53,9 +53,8 @@ h1 { margin: 0; font-size: 24px; }
     font-size: 12px;
 }
 .input-container:focus-within .scan-btn {
-    display: block; /* Show on focus */
+    display: block;
 }
-
 
 .footer { display: flex; justify-content: space-around; margin-top: 40px; font-weight: bold; }
 .signature-field { text-align: center; }
@@ -65,18 +64,32 @@ button { background-color: #007bff; color: white; border: none; padding: 12px 20
 button#clear-btn { background-color: #dc3545; }
 button:hover { opacity: 0.9; }
 
-/* Scanner Modal Styles */
-.modal-hidden { display: none; }
-#scanner-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); z-index: 1000; display: flex; justify-content: center; align-items: center; }
+/* CORRECTED Scanner Modal Styles */
+#scanner-modal {
+    display: none; /* Hide by default */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.7);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+#scanner-modal.is-visible {
+    display: flex; /* Show only when this class is added */
+}
+
 .modal-content { background: white; padding: 20px; border-radius: 8px; text-align: center; max-width: 90%; width: 400px; }
 #video { width: 100%; border: 1px solid #ccc; border-radius: 4px; }
 #close-scanner-btn { background-color: #6c757d; margin-top: 15px; }
-
 
 @media print {
     body { background-color: #fff; padding: 0; }
     .buttons-container, .scan-btn, #scanner-modal { display: none !important; }
     .container { box-shadow: none; max-width: 100%; }
     #data-table input { outline: none; }
-    tr.is-empty { display: none; } /* This hides empty rows during print */
+    tr.is-empty { display: none; }
 }

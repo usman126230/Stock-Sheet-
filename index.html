@@ -19,12 +19,12 @@
         <table id="data-table">
             <thead>
                 <tr>
-                    <th style="width: 15%;">الكمية</th>
+                    <th style="width: 20%;">الكمية</th>
                     <th>اسم المنتج</th>
                     <th style="width: 35%;">الباركود</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="table-body">
                 </tbody>
         </table>
 
@@ -45,11 +45,11 @@
         </div>
     </div>
 
-    <div id="scanner-modal" class="modal-hidden">
+    <div id="scanner-modal">
         <div class="modal-content">
-            <p>الكاميرا على الباركود</p>
+            <p>Point camera at the barcode</p>
             <video id="video" playsinline></video>
-            <button id="close-scanner-btn">إغلاق</button>
+            <button id="close-scanner-btn">Close</button>
         </div>
     </div>
     

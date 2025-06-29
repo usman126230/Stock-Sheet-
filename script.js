@@ -5,11 +5,18 @@ document.addEventListener('DOMContentLoaded', function() {
     const clearBtn = document.getElementById('clear-btn');
     const totalRows = 25;
 
+    // Scanner Elements
     const scannerModal = document.getElementById('scanner-modal');
     const videoElement = document.getElementById('video');
     const closeScannerBtn = document.getElementById('close-scanner-btn');
     const codeReader = new ZXing.BrowserMultiFormatReader();
     let selectedInput = null;
+
+    // Change button text to English to avoid confusion
+    printBtn.textContent = 'Print / Save as PDF';
+    clearBtn.textContent = 'Erase All Data';
+    closeScannerBtn.textContent = 'Close';
+    document.querySelector('.modal-content p').textContent = 'Point camera at the barcode';
 
     function createRow(rowIndex) {
         const row = document.createElement('tr');
@@ -36,18 +43,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     isEmpty = false;
                 }
             });
-            if (isEmpty) {
-                row.classList.add('is-empty');
-            } else {
-                row.classList.remove('is-empty');
-            }
+            row.classList.toggle('is-empty', isEmpty);
         });
     }
 
     function saveData() {
         const data = { date: dateInput.value, table: [] };
-        const inputs = document.querySelectorAll('.input-cell');
-        inputs.forEach(input => {
+        document.querySelectorAll('.input-cell').forEach(input => {
             if (!data.table[input.dataset.row]) data.table[input.dataset.row] = [];
             data.table[input.dataset.row][input.dataset.col] = input.value;
         });
@@ -60,35 +62,39 @@ document.addEventListener('DOMContentLoaded', function() {
         if (savedData) {
             const data = JSON.parse(savedData);
             dateInput.value = data.date || '';
-            const inputs = document.querySelectorAll('.input-cell');
-            inputs.forEach(input => {
-                if (data.table && data.table[input.dataset.row] && data.table[input.dataset.row][input.dataset.col]) {
+            document.querySelectorAll('.input-cell').forEach(input => {
+                if (data.table?.[input.dataset.row]?.[input.dataset.col]) {
                     input.value = data.table[input.dataset.row][input.dataset.col];
                 }
             });
         } else {
-            const today = new Date();
-            dateInput.value = today.toISOString().split('T')[0];
+            dateInput.value = new Date().toISOString().split('T')[0];
         }
         updateEmptyRowClasses();
     }
 
     function startScanner(event) {
-        if (event.target.classList.contains('scan-btn')) {
-            selectedInput = event.target.previousElementSibling;
-            scannerModal.style.display = 'flex';
-            codeReader.decodeFromVideoDevice(undefined, 'video', (result, err) => {
-                if (result) {
-                    selectedInput.value = result.text;
-                    stopScanner();
-                    saveData(); // Save after successful scan
-                }
-                if (err && !(err instanceof ZXing.NotFoundException)) {
-                    console.error(err);
-                    stopScanner();
-                }
-            }).catch(err => console.error(err));
-        }
+        if (!event.target.classList.contains('scan-btn')) return;
+
+        selectedInput = event.target.previousElementSibling;
+        scannerModal.style.display = 'flex';
+
+        codeReader.decodeFromVideoDevice(undefined, 'video', (result, err) => {
+            if (result) {
+                selectedInput.value = result.text;
+                stopScanner();
+                saveData();
+            }
+            if (err && !(err instanceof ZXing.NotFoundException)) {
+                console.error(err);
+                alert('An error occurred during scanning.');
+                stopScanner();
+            }
+        }).catch(err => {
+            console.error(err);
+            alert('Could not start camera. Please make sure you grant camera permission. This feature works best in Chrome on Android.');
+            stopScanner();
+        });
     }
 
     function stopScanner() {
@@ -97,10 +103,11 @@ document.addEventListener('DOMContentLoaded', function() {
         selectedInput = null;
     }
 
-    // Event Listeners
+    // --- Event Listeners ---
     printBtn.addEventListener('click', () => window.print());
+
     clearBtn.addEventListener('click', () => {
-        if (confirm('کیا آپ واقعی تمام ڈیٹا صاف کرنا چاہتے ہیں؟')) {
+        if (confirm('Are you sure you want to erase all data?')) {
             localStorage.removeItem('sheetData');
             document.querySelectorAll('.input-cell').forEach(input => input.value = '');
             loadData();
@@ -112,7 +119,7 @@ document.addEventListener('DOMContentLoaded', function() {
     tableBody.addEventListener('input', saveData);
     dateInput.addEventListener('change', saveData);
 
-    // Initial setup
+    // --- Initial Setup ---
     for (let i = 0; i < totalRows; i++) createRow(i);
     loadData();
 });

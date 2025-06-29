@@ -21,7 +21,7 @@
                 <tr>
                     <th style="width: 15%;">الكمية</th>
                     <th>اسم المنتج</th>
-                    <th style="width: 30%;">الباركود</th>
+                    <th style="width: 35%;">الباركود</th>
                 </tr>
             </thead>
             <tbody>
@@ -45,6 +45,15 @@
         </div>
     </div>
 
+    <div id="scanner-modal" class="modal-hidden">
+        <div class="modal-content">
+            <p>الكاميرا على الباركود</p>
+            <video id="video" playsinline></video>
+            <button id="close-scanner-btn">إغلاق</button>
+        </div>
+    </div>
+    
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@zxing/library@latest/umd/zxing.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
